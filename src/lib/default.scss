@@ -1,0 +1,257 @@
+@import url('https://fonts.googleapis.com/css2?family=Nunito:ital,wght@0,300;0,400;0,600;0,700;1,400&family=Roboto&display=swap');
+
+body {
+  min-height: 100vh;
+}
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  font-family: 'Nunito', sans-serif;
+  border: none;
+}
+
+div, span, a, button, input, textarea {
+	font-size: 1rem;
+	font-weight: 600;
+}
+
+li {
+  margin-left: 1.5rem;
+}
+
+button {
+  cursor: pointer;
+  border: none;
+  background-color: transparent;
+  font-family: inherit;
+  font-size: inherit;
+  color: inherit;
+
+  &:disabled {
+    cursor: default;
+  }
+}
+
+input {
+	font-family: inherit;
+	font-size: inherit;
+  background-color: transparent;
+  color: var(--text-color);
+}
+
+:focus {
+  outline: none;
+}
+
+::selection {
+	background: rgba(var(--primary-var), 0.8);
+	color: var(--text-color);
+}
+
+label {
+	user-select: none;
+}
+
+input[type="checkbox"] {
+	display: none;
+
+	&:checked + label {
+		background: var(--primary);
+
+		&::before {
+			opacity: 1;
+		}
+	}
+
+	&:disabled + label {
+		opacity: .5;
+
+		&::before {
+		}
+	}
+
+	+ label {
+		--size: 1.25em;
+		width: var(--size);
+		min-width: var(--size);
+		height: var(--size);
+		background: var(--input-element-bg);
+		border-radius: 0.25rem;
+		display: inline-block;
+		box-sizing: border-box;
+		position: relative;
+		cursor: pointer;
+		transition: background-color .25s ease;
+
+		&::before {
+			content: "";
+			position: absolute;
+			width: 60%;
+			height: 27%;
+			border-bottom: 4px solid var(--text-on-primary);
+			border-left: 4px solid var(--text-on-primary);
+			transform: translateY(-76%) translateX(-52%) rotate(-45deg);
+			margin-top: 50%;
+			margin-left: 50%;
+			opacity: 0;
+			transition: opacity .25s ease;
+		}
+	}
+}
+
+label:is(:hover, :focus) + input[type="checkbox"] + label, input[type="checkbox"] + label:is(:hover, :focus) {
+	&::before {
+		opacity: .333;
+	}
+}
+
+a {
+  color: var(--link-color);
+  text-decoration: none;
+  filter: brightness(1.0);
+  transition: filter .2s ease;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  overflow: hidden;
+
+  &:hover {
+    filter: brightness(1.1);
+  }
+
+  &:active {
+    filter: brightness(0.9);
+  }
+}
+
+.pane {
+  padding: 1rem;
+  background: var(--bg-el1-color);
+  border: 1px solid var(--border-color);
+  border-radius: 1rem;
+}
+
+.home-button {
+  img {
+    width: 2rem;
+    height: 2rem;
+  }
+}
+
+:root {
+	--scale: 1.0;
+	--primary-var: 240, 128, 128;
+	--image-height-limited: 70vh;
+	--border-color: rgb(128 128 128 / 14%);
+	--v-widthM: 50rem;
+	--v-widthL: 60rem;
+  background-color: var(--bg-color);
+  color: var(--text-color);
+
+  &:not(.theme-override) {
+    --bg-color: #121212;
+    --bg-el1-color: #1f1f1f;
+    --bg-el2-color: #292929;
+    --text-color: #e4e4e4;
+    --text-on-primary: var(--text-color);
+    --primary: lightcoral;
+    --primary-contrast: #e65d5d;
+    --shadow-color: #0000009c;
+    --dark-shadow-color: black;
+    --controls-bg: #121212ad;
+    --controls-color: var(--text-color);
+    --controls-link-color: var(--link-color);
+    --progress-bar-color: var(--primary);
+    --progress-bar-tip: var(--text-color);
+    --primary-faint: #875e5e;
+    --primary-transparent: #f07f7f80;
+    --link-color: #7da3f9;
+    --switcher-bg-hover: #333333;
+    --switcher-bg-active: #404040;
+    --switcher-bg-selected: #616161;
+    --divider-color: var(--border-color);
+    --user-admin-bg: darkred;
+    --user-admin-color: #ff3939;
+    --user-mod-bg: green;
+    --user-mod-color: lightgreen;
+    --cancel-btn-bg: #5b5b5b;
+    --upvote-hover: #efc77b;
+    --upvote-filled: orange;
+    --downvote-hover: #99abe3;
+    --downvote-filled: royalblue;
+    --transparent-btn-hover: #ffffff1a;
+    --transparent-btn-active: #ffffff40;
+    --input-element-bg: #4a4a4a;
+    --scrollbar-color: #e4e4e4a6;
+    --scrollbar-color-hover: #e4e4e4;
+    --code-bg: #363636;
+    --table-header-bg: #4e4e4e;
+    --table-header-divider: #2d2d2d;
+    --table-row-alt-bg: #313131;
+    --table-row-hover-bg: #3e3e3e;
+    --tooltip-bg: black;
+    --quote-color: cornflowerblue;
+    --error: #c30101;
+    --comment-collapser-bg: rgba(4, 4, 4, 0.6);
+    --comment-collapser-hover-bg: rgba(0, 0, 0, 0.8);
+    --header-bg: var(--bg-color);
+    --header-stroke: var(--text-color);
+    --fab-root-filter: grayscale(1) brightness(0.5) opacity(0.65);
+    --fab-root-filter-active: grayscale(1) brightness(.4) opacity(1);
+    --fab-root-shadow: var(--shadow-color);
+  }
+
+  &.theme-override.theme-light {
+    --bg-color: #ffffff;
+    --bg-el1-color: var(--bg-color);
+    --bg-el2-color: #f1f1f1;
+    --text-color: #2c2c2c;
+    --text-on-primary: white;
+    --primary-contrast: #f57272;
+    --primary: #ff4747;
+    --shadow-color: #0000000d;
+    --dark-shadow-color: #0000006d;
+    --controls-bg: #121212ad;
+    --controls-color: #e4e4e4;
+    --controls-link-color: #7da3f9;
+    --progress-bar-color: lightcoral;
+    --progress-bar-tip: #e4e4e4;
+    --primary-faint: #875e5e;
+    --primary-transparent: #f07f7f80;
+    --link-color: #5589ff;
+    --switcher-bg-hover: #ebebeb;
+    --switcher-bg-active: #dcdcdc;
+    --switcher-bg-selected: #c4c4c4;
+    --divider-color: var(--border-color);
+    --user-admin-bg: darkred;
+    --user-admin-color: #cf0808;
+    --user-mod-bg: green;
+    --user-mod-color: #31cd31;
+    --cancel-btn-bg: #5b5b5b;
+    --upvote-hover: #e29709;
+    --upvote-filled: orange;
+    --downvote-hover: #547eff;
+    --downvote-filled: royalblue;
+    --transparent-btn-hover: #00000009;
+    --transparent-btn-active: #00000018;
+    --input-element-bg: var(--bg-el2-color);
+    --scrollbar-color: #a3a3a3a6;
+    --scrollbar-color-hover: #a3a3a3d9;
+    --code-bg: var(--bg-el2-color);
+    --table-header-bg: #e0e0e0;
+    --table-header-divider: var(--border-color);
+    --table-row-alt-bg: #f5f5f5;
+    --table-row-hover-bg: #eaeaea;
+    --tooltip-bg: white;
+    --quote-color: cornflowerblue;
+    --error: #bf0000;
+    --comment-collapser-bg: rgba(4, 4, 4, 0.15);
+    --comment-collapser-hover-bg: rgba(0, 0, 0, 0.25);
+    --header-bg: var(--bg-color);
+    --header-stroke: #c3c3c4;
+    --fab-root-filter: grayscale(1) brightness(1) opacity(0.3);
+    --fab-root-filter-active: grayscale(1) brightness(1) opacity(0.5);
+    --fab-root-shadow: #00000026;
+  }
+}
