@@ -9,12 +9,21 @@
 </svelte:head>
 
 <div class="links">
-	<a href="https://github.com/ArthurHeitmann/arctic_shift" target="_blank">
-		<img src={githubLogo} alt="GitHub logo" />
-		<span>Documentation</span>
-	</a>
-	<a href="/download-tool">Download tool</a>
-	<a href="/search">Search</a>
+	<div></div>
+	<div class="center">
+		<a href="https://github.com/ArthurHeitmann/arctic_shift" target="_blank">
+			<img src={githubLogo} alt="GitHub logo" />
+			<span>Documentation</span>
+		</a>
+		<a href="/download-tool">Download tool</a>
+		<a href="/search">Search</a>
+	</div>
+	<div class="end">
+		<a href="https://github.com/ArthurHeitmann/arctic_shift_ui" target="_blank">
+			<img src={githubLogo} alt="GitHub logo" />
+			<span>Source Code</span>
+		</a>
+	</div>
 </div>
 
 <style lang="scss">
@@ -24,11 +33,7 @@
 	display: flex;
 	flex-direction: column;
 	align-items: center;
-	justify-content: center;
-	gap: 3rem;
-
-	* {
-	}
+	justify-content: space-between;
 
 	a {
 		color: var(--text-color);
@@ -38,7 +43,7 @@
 		gap: 2rem;
 		font-size: 3rem;
 		transform: translateX(0);
-		transition: transform .5s ease;
+		transition: transform .5s ease, filter .2s ease;
 
 		img + span {
 			font-size: 2rem;
@@ -53,6 +58,42 @@
 			transform: translateX(.75rem);
 		}
 	}
+
+	.center {
+		display: flex;
+		flex-direction: column;
+		align-items: center;
+		// justify-content: center;
+		// flex-grow: 1;
+		gap: 3rem;
+		@media (max-height: 500px) {
+			gap: 1rem;
+		}
+	}
+
+	.end {
+		margin-bottom: 3rem;
+		@media (max-height: 500px) {
+			margin-bottom: 0.5rem;
+		}
+
+		* {
+			font-size: 1.35rem;
+		}
+
+		a {
+			gap: 0.8rem;
+		}
+
+		img {
+			width: 1.5rem;
+
+			& + span {
+				transform: translateY(0.1rem);
+			}
+		}
+	}
+
 }
 
 </style>
