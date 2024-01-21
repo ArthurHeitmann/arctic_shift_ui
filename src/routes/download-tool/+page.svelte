@@ -24,12 +24,13 @@
 	let downloadType = DownloadType.subreddit;
 	let name = "";
 	let isNameValid = false;
-	let startDate: Date|null = null;
+	let startDate: Date|null = new Date("2005-01-01T00:00:00.000Z");
 	let endDate: Date|null = null;
 	let downloadPosts = true;
 	let downloadComments = true;
 	let archiveStream: CombinedArchiveStream|null = null;
 	let isRunning = false;
+	let stateIsChanging = false;
 	let isDone = false;
 	let isCancelling = false;
 
@@ -116,13 +117,23 @@
 	}
 
 	async function pause() {
-		await archiveStream?.pause();
-		isRunning = false;
+		try {
+			stateIsChanging = true;
+			await archiveStream?.pause();
+			isRunning = false;
+		} finally {
+			stateIsChanging = false;
+		}
 	}
 
 	async function resume() {
-		await archiveStream?.resume();
-		isRunning = true;
+		try {
+			stateIsChanging = true;
+			await archiveStream?.resume();
+			isRunning = true;
+		} finally {
+			stateIsChanging = false;
+		}
 	}
 
 	async function tryAgain() {
@@ -228,7 +239,7 @@
 					<button
 						class="main-action primary"
 						on:click={tryAgain}
-						disabled={isCancelling}
+						disabled={isCancelling || stateIsChanging}
 					>Try again</button>
 				{/if}
 				<button
@@ -240,19 +251,19 @@
 					<button
 						class="main-action primary"
 						on:click={pause}
-						disabled={isCancelling}
+						disabled={isCancelling || stateIsChanging}
 					>Pause</button>
 				{:else}
 					<button
 						class="main-action primary"
 						on:click={resume}
-						disabled={isCancelling}
+						disabled={isCancelling || stateIsChanging}
 					>Resume</button>
 				{/if}
 				<button
 					class="main-action secondary"
 					on:click={cancel}
-					disabled={isCancelling}
+					disabled={isCancelling || stateIsChanging}
 				>Cancel</button>
 				{/if}
 			</div>

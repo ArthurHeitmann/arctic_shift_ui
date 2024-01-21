@@ -53,8 +53,6 @@
 		error = null;
 		loading = true;
 		const params = new URLSearchParams();
-		params.append("md2html", "true");
-		params.append("meta-app", "search-tool");
 		let paramNames: [string, string][] = [];
 		let endpoint: string;
 		if (fun == Function.PostsSearch) {
@@ -98,16 +96,26 @@
 			if (value.length > 0)
 				params.append(name, value);
 		}
+		params.append("md2html", "true");
+		params.append("meta-app", "search-tool");
 		
 		const requestUrl = `https://arctic-shift.photon-reddit.com/api/${endpoint}/search?${params.toString()}`;
 		try {
 			const response = await fetch(requestUrl);
-			if (!response.ok) {
-				error = `Error ${response.status}: ${response.statusText}`;
-				loading = false;
+			let data;
+			try {
+				data = await response.json();
+			} catch (e) {
+				if (!response.ok) {
+					error = `Error ${response.status} ${response.statusText}`;
+					loading = false;
+				}
+				else {
+					error = (e as Error).message;
+					loading = false;
+				}
 				return;
 			}
-			const data = await response.json();
 			if (data.error) {
 				error = data.error;
 				loading = false;
@@ -158,13 +166,13 @@
 				bind:text={subreddit}
 				label="Subreddit"
 				transform={(text) => text.replace(/^\/?r\//g, "")}
-				getError={(text) => text.length == 0 || text.length >= 2 && text.match(/^[a-zA-Z0-9_]+$/) ? null : "Invalid subreddit"}
+				getError={(text) => text.length == 0 || text.length >= 2 && text.match(/^[a-zA-Z0-9_\-]+$/) ? null : "Invalid subreddit"}
 			/>
 			<TextField
 				bind:text={author}
 				label="Author"
 				transform={(text) => text.replace(/^\/?u(ser)?\//g, "")}
-				getError={(text) => text.length == 0 || text.length >= 2 && text.match(/^[a-zA-Z0-9_]+$/) ? null : "Invalid author"}
+				getError={(text) => text.length == 0 || text.length >= 2 && text.match(/^[a-zA-Z0-9_\-]+$/) ? null : "Invalid author"}
 			/>
 		</div>
 		<div class="row">

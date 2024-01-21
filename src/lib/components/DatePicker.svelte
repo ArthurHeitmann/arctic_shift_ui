@@ -11,6 +11,8 @@
 
 	function getError(text: string): string|null {
 		let newDate: Date|null = new Date(text);
+		if (allowNow && text.toLowerCase() == "now")
+			return null;
 		if (newDate.toString() === "Invalid Date")
 			return "Invalid date";
 		return null;

@@ -9,6 +9,7 @@ export class ArchiveStream<T> {
 	private fileStream: FileSystemWritableFileStream|null = null;
 	private lastFlushAt: number = 0;
 	private repeatedErrorCount: number = 0;
+	private onStopped: (() => void)|null = null;
 	startDate: number;
 	currentDate: number;
 	isRunning: boolean = false;
@@ -49,11 +50,18 @@ export class ArchiveStream<T> {
 		this.run();
 	}
 
-	async pause() {
-		this.isRunning = false;
-		this.onStateChange.notify();
-		this.abortController?.abort();
-		await this.flush();
+	pause(): Promise<void> {
+		return new Promise(async (resolve, reject) => {
+			const isRunning = this.isRunning;
+			if (isRunning)	
+				this.onStopped = resolve;
+			this.isRunning = false;
+			this.onStateChange.notify();
+			this.abortController?.abort();
+			await this.flush();
+			if (!isRunning)
+				resolve();
+		});
 	}
 
 	async cancel() {
@@ -91,6 +99,8 @@ export class ArchiveStream<T> {
 			}
 		}
 		this.runningSw.stop();
+		if (this.onStopped)
+			this.onStopped();
 	}
 
 	private async fetchData() {
@@ -110,7 +120,10 @@ export class ArchiveStream<T> {
 			await this.fileStream?.close();
 			return;
 		}
-		this.currentDate = data.data[data.data.length - 1].created_utc * 1000;
+		let newDate = data.data[data.data.length - 1].created_utc * 1000;
+		if (newDate === this.currentDate)
+			newDate += 1000;
+		this.currentDate = newDate;
 		this.onNewData.notify(data.data);
 		this.writeToFile(data.data);
 	}

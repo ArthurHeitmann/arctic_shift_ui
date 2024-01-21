@@ -29,15 +29,19 @@ export class CombinedArchiveStream {
 			this.comments?.tryAgain(),
 		]);
 	}
-
+	
 	resume() {
-		this.posts?.resume();
-		this.comments?.resume();
+		return Promise.all([
+			this.posts?.resume(),
+			this.comments?.resume(),
+		]);
 	}
-
+	
 	pause() {
-		this.posts?.pause();
-		this.comments?.pause();
+		return Promise.all([
+			this.posts?.pause(),
+			this.comments?.pause(),
+		]);
 	}
 
 	cancel() {
