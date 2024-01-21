@@ -139,6 +139,11 @@
 	}
 </script>
 
+<svelte:head>
+	<title>Search through reddit data</title>
+	<meta name="description" content="Search through reddit post and comment, using parameters like subreddit, author, date, body, etc.">
+</svelte:head>
+
 <div class="search">
 	<div class="parameters pane">
 		<div class="row title-row">

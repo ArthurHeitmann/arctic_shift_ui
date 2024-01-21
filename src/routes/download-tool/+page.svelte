@@ -153,6 +153,11 @@
 	}
 </script>
 
+<svelte:head>
+	<title>Download subreddit or user data</title>
+	<meta name="description" content="Download all reddit posts and comments from a subreddit or user." />
+</svelte:head>
+
 <div class="download-tool">
 	<div class="controls pane">
 		<div class="row title-row">

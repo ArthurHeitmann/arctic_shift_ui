@@ -3,6 +3,11 @@
 	import githubLogo from "$lib/images/github-mark-white.svg";
 </script>
 
+<svelte:head>
+	<title>Arctic Shift</title>
+	<meta name="description" content="Documentation and tools for the Arctic Shift project. Search or download archived reddit data.">
+</svelte:head>
+
 <div class="links">
 	<a href="https://github.com/ArthurHeitmann/arctic_shift" target="_blank">
 		<img src={githubLogo} alt="GitHub logo" />
