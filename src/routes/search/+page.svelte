@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { onMount } from "svelte";
 	import "$lib/default.scss";
 	import TextField from "$lib/components/TextField.svelte";
     import OptionSelector from "$lib/components/OptionSelector.svelte";
@@ -8,10 +9,10 @@
 	import homeSvg from "$lib/images/home.svg";
 
 	enum Function {
-		PostIds,
-		CommentIds,
-		PostsSearch,
-		CommentsSearch,
+		PostIds="post_ids",
+		CommentIds="comment_ids",
+		PostsSearch="posts_search",
+		CommentsSearch="comments_search",
 	}
 
 	let fun = Function.PostsSearch;
@@ -37,6 +38,27 @@
 	let error: string|null = null;
 	let posts: RedditPostData[]|null = null;
 	let comments: RedditCommentData[]|null = null;
+
+	onMount(() => {
+		const params = new URLSearchParams(location.search);
+		const funStr = params.get("fun");
+		if (Object.values(Function).includes(funStr as any))
+			fun = funStr as Function;
+		subreddit = params.get("subreddit") || "";
+		author = params.get("author") || "";
+		after = params.get("after") || "";
+		before = params.get("before") || "";
+		limit = params.get("limit") || "10";
+		sort = params.get("sort") as "asc"|"desc" || "desc";
+		over18 = params.get("over_18") == "true" ? true : params.get("over_18") == "false" ? false : null;
+		spoiler = params.get("spoiler") == "true" ? true : params.get("spoiler") == "false" ? false : null;
+		title = params.get("title") || "";
+		selftext = params.get("selftext") || "";
+		url = params.get("url") || "";
+		linkId = params.get("link_id") || "";
+		parentId = params.get("parent_id") || "";
+		body = params.get("body") || "";
+	});
 
 	function verifyLimit(limitStr: string): string|null {
 		if (limitStr.length == 0)
@@ -96,6 +118,13 @@
 			if (value.length > 0)
 				params.append(name, value);
 		}
+		const ownUrlParams = new URLSearchParams();
+		ownUrlParams.append("fun", fun);
+		for (const [name, value] of params)
+			ownUrlParams.append(name, value);
+		const newOwnUrl = new URL(location.href);
+		newOwnUrl.search = ownUrlParams.toString();
+		history.replaceState(null, "", newOwnUrl.toString());
 		params.append("md2html", "true");
 		params.append("meta-app", "search-tool");
 		
@@ -136,6 +165,27 @@
 			error = (e as Error).message;
 		}
 		loading = false;
+	}
+
+	function download() {
+		let data: object[]|null = null;
+		let name: string|null = null;
+		if (fun == Function.PostsSearch) {
+			data = posts;
+			name = "posts";
+		}
+		else if (fun == Function.CommentsSearch) {
+			data = comments;
+			name = "comments";
+		}
+		if (!data || !name)
+			return;
+		const blob = new Blob([JSON.stringify(data, null, "\t")], { type: "application/json" });
+		const url = URL.createObjectURL(blob);
+		const a = document.createElement("a");
+		a.href = url;
+		a.download = `${name}.json`;
+		a.click();
 	}
 </script>
 
@@ -280,8 +330,14 @@
 	
 		<div class="row">
 			<div class="error">{error || ""}</div>
+			{#if fun === Function.PostsSearch && posts?.length || fun === Function.CommentsSearch && comments?.length}
+				<button
+					class="submit-button download"
+					on:click={download}
+				>Download</button>
+			{/if}
 			<button
-				class="search-button"
+				class="submit-button"
 				disabled={loading}
 				on:click={search}
 			>Search</button>
@@ -357,7 +413,7 @@
 		height: 1rem;
 	}
 
-	.search-button {
+	.submit-button {
 		flex: 0;
 		height: 2.5rem;
 		line-height: 2.5rem;
@@ -367,6 +423,10 @@
 		border-radius: 2rem;
 		font-size: 1.2rem;
 		transition: background 0.25s ease;
+
+		&.download {
+			background: transparent;
+		}
 
 		&:disabled {
 			opacity: .5;
