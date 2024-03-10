@@ -38,6 +38,8 @@
 	let error: string|null = null;
 	let posts: RedditPostData[]|null = null;
 	let comments: RedditCommentData[]|null = null;
+	$: currentData = fun === Function.PostsSearch ? posts : null ?? fun === Function.CommentsSearch ? comments : null;
+	let previousHistory: string[] = [];
 
 	onMount(() => {
 		const params = new URLSearchParams(location.search);
@@ -71,14 +73,15 @@
 		return null;
 	}
 
-	async function search() {
+	async function search(_: any, clearPrevious = true) {
+		if (clearPrevious)
+			previousHistory = [];
 		error = null;
 		loading = true;
 		const params = new URLSearchParams();
 		let paramNames: [string, string][] = [];
 		let endpoint: string;
 		if (fun == Function.PostsSearch) {
-			posts = null;
 			endpoint = "posts";
 			paramNames = [
 				["subreddit", subreddit],
@@ -95,7 +98,6 @@
 			];
 		}
 		else if (fun == Function.CommentsSearch) {
-			comments = null;
 			endpoint = "comments";
 			paramNames = [
 				["subreddit", subreddit],
@@ -187,6 +189,50 @@
 		a.download = `${name}.json`;
 		a.click();
 	}
+
+	function searchPagination(changeParameters: (data: RedditPostData[]|RedditCommentData[]) => void) {
+		if (!currentData)
+			return;
+		changeParameters(currentData);
+		search(null, false);
+	}
+
+	function searchNext() {
+		searchPagination((data) => {
+			const lastTimestamp = data[data.length - 1].created_utc;
+			let firstTimestamp = data[0].created_utc;
+			const lastDate = new Date(lastTimestamp * 1000).toISOString().replace(/\.\d+Z$/, "");
+			if (sort === "desc") {
+				before = lastDate;
+				after = "";
+				firstTimestamp += 1;
+			}
+			else {
+				after = lastDate;
+				before = "";
+				firstTimestamp -= 1;
+			}
+			const firstDate = new Date(firstTimestamp * 1000).toISOString().replace(/\.\d+Z$/, "");
+			previousHistory = [...previousHistory, firstDate];
+		});
+	}
+
+	function searchPrevious() {
+		searchPagination((data) => {
+			const timestamp = previousHistory[previousHistory.length - 1];
+			if (!timestamp)
+				return;
+			previousHistory = previousHistory.slice(0, -1);
+			if (sort === "desc") {
+				before = timestamp;
+				after = "";
+			}
+			else {
+				after = timestamp;
+				before = "";
+			}
+		});
+	}
 </script>
 
 <svelte:head>
@@ -227,7 +273,7 @@
 				bind:text={author}
 				label="Author"
 				transform={(text) => text.replace(/^\/?u(ser)?\//g, "")}
-				getError={(text) => text.length == 0 || text.length >= 2 && text.match(/^[a-zA-Z0-9_\-]+$/) ? null : "Invalid author"}
+				getError={(text) => text.length == 0 || text.length >= 2 && text.match(/^[a-zA-Z0-9_\-\[\]]+$/) ? null : "Invalid author"}
 			/>
 		</div>
 		<div class="row">
@@ -276,7 +322,7 @@
 			</div>
 			<TextField
 				bind:text={url}
-				label="URL"
+				label="URL (exact match)"
 				transform={(text) => text.replace(/^\/?u(ser)?\//g, "")}
 				getError={(text) => text.length == 0 || text.length > 2 && !text.match(/^[a-zA-Z0-9_]+$/) ? null : "Invalid URL"}
 			/>
@@ -332,7 +378,7 @@
 			<div class="error">{error || ""}</div>
 			{#if fun === Function.PostsSearch && posts?.length || fun === Function.CommentsSearch && comments?.length}
 				<button
-					class="submit-button download"
+					class="submit-button secondary"
 					on:click={download}
 				>Download</button>
 			{/if}
@@ -344,9 +390,22 @@
 		</div>
 	</div>
 
-	<div class="gap"></div>
+	{#if currentData}
+		<div class="pagination">
+			<button
+				class="submit-button"
+				disabled={loading || previousHistory.length == 0}
+				on:click={searchPrevious}
+			>Previous</button>
+			<button
+				class="submit-button"
+				disabled={loading}
+				on:click={searchNext}
+			>Next</button>
+		</div>
+	{/if}
 
-	<div class="results">
+	<div class="results" class:loading={loading}>
 		{#if fun === Function.PostsSearch && posts !== null}
 			{#if posts.length == 0}
 				<p>Nothing found o_O</p>
@@ -363,6 +422,21 @@
 			{/each}
 		{/if}
 	</div>
+
+	{#if currentData && currentData.length > 5}
+		<div class="pagination">
+			<button
+				class="submit-button"
+				disabled={loading || previousHistory.length == 0}
+				on:click={searchPrevious}
+			>Previous</button>
+			<button
+				class="submit-button"
+				disabled={loading}
+				on:click={searchNext}
+			>Next</button>
+		</div>
+	{/if}
 </div>
 
 <style lang="scss">
@@ -424,7 +498,7 @@
 		font-size: 1.2rem;
 		transition: background 0.25s ease;
 
-		&.download {
+		&.secondary {
 			background: transparent;
 		}
 
@@ -446,9 +520,21 @@
 		color: var(--error);
 	}
 
+	.pagination {
+		display: flex;
+		flex-direction: row;
+		justify-content: space-between;
+	}
+
 	.results {
 		display: flex;
 		flex-direction: column;
 		gap: 1rem;
+		transition: opacity 0.25s ease;
+
+		&.loading {
+			opacity: .5;
+			pointer-events: none;
+		}
 	}
 </style>
