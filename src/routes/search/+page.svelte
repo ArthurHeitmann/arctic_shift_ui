@@ -7,6 +7,8 @@
     import RedditPost from "$lib/components/RedditPost.svelte";
     import RedditComment from "$lib/components/RedditComment.svelte";
 	import homeSvg from "$lib/images/home.svg";
+	import settingsSvg from "$lib/images/settings.svg";
+	import Preferences from "./Preferences.svelte"
 
 	enum Function {
 		PostIds="post_ids",
@@ -33,6 +35,8 @@
 	let linkId = "";
 	let parentId = "";
 	let body = "";
+
+	let showSettings = false;
 
 	let loading = false;
 	let error: string|null = null;
@@ -376,6 +380,12 @@
 	
 		<div class="row">
 			<div class="error">{error || ""}</div>
+			<button
+				class="settings-button"
+				on:click={() => showSettings = !showSettings}
+			>
+				<img src={settingsSvg} alt="settings" />
+			</button>
 			{#if fun === Function.PostsSearch && posts?.length || fun === Function.CommentsSearch && comments?.length}
 				<button
 					class="submit-button secondary"
@@ -389,6 +399,10 @@
 			>Search</button>
 		</div>
 	</div>
+
+	{#if showSettings}
+		<Preferences/>
+	{/if}
 
 	{#if currentData}
 		<div class="pagination">
@@ -410,14 +424,14 @@
 			{#if posts.length == 0}
 				<p>Nothing found o_O</p>
 			{/if}
-			{#each posts as post}
+			{#each posts as post (post.id)}
 				<RedditPost data={post} />
 			{/each}
 		{:else if fun === Function.CommentsSearch && comments !== null}
 			{#if comments.length == 0}
 				<p>Nothing found o_O</p>
 			{/if}
-			{#each comments as comment}
+			{#each comments as comment (comment.id)}
 				<RedditComment data={comment} />
 			{/each}
 		{/if}
@@ -459,8 +473,10 @@
 	.row {
 		display: flex;
 		flex-direction: row;
+		align-items: center;
 		@media (max-width: 600px) {
 			flex-direction: column;
+			align-items: stretch;
 		}
 		gap: .5rem;
 		width: 100%;
@@ -513,6 +529,30 @@
 
 		&:active {
 			background: var(--switcher-bg-active);
+		}
+	}
+
+	.settings-button {
+		transition: background 0.25s ease;
+		border-radius: 50%;
+		height: 2.25rem;
+		width: 2.25rem;
+		display: flex;
+		justify-content: center;
+		align-items: center;
+		flex: unset;
+
+		&:hover {
+			background: var(--transparent-btn-hover);
+		}
+
+		&:active {
+			background: var(--transparent-btn-active);
+		}
+
+		img {
+			width: 1.5rem;
+			height: 1.5rem;
 		}
 	}
 

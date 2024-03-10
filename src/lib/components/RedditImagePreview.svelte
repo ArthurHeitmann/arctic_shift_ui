@@ -1,9 +1,11 @@
 <script lang="ts">
     import type { RedditPostData } from "$lib/redditTypes";
+	import { blurNsfw } from "./searchPreferences";
 
 	export let data: RedditPostData;
 	
-	let blur = data.over_18;
+	let nsfw = data.over_18;
+	$: blur = nsfw && $blurNsfw;
 	let hasTriedPreviewFull = false;
 	let imgUrl: string = "";
 	if (data.preview?.images[0]) {

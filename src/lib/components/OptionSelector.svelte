@@ -8,6 +8,8 @@
 	export let label: string = "";
 	export let canDeselect: boolean = false;
 	export let expand: boolean = false;
+	export let column = true;
+	export let stretchRow = true;
 
 	function select(option: Option<any>) {
 		selected = option.value;
@@ -18,7 +20,11 @@
 	}
 </script>
 
-<div class="option-selector-wrapper">
+<div
+	class="option-selector-wrapper"
+	class:column
+	class:stretchRow={!column && stretchRow}
+>
 	{#if label}
 		<div class="label">
 			{label}
@@ -41,14 +47,33 @@
 <style lang="scss">
 	.option-selector-wrapper {
 		display: flex;
-		flex-direction: column;
+
+		&.column {
+			flex-direction: column;
+
+			.label {
+				margin-left: 0.5rem;
+				margin-top: 0.75rem;
+				margin-bottom: 0.25rem;
+			}
+		}
+
+		&:not(.column) {
+			flex-direction: row;
+			align-items: center;
+
+			.label {
+				margin-right: 1.5rem;
+			}
+		}
+
+		&.stretchRow {
+			justify-content: space-between;
+		}
 	}
 
 	.label {
 		font-size: 0.8rem;
-		margin-left: 0.5rem;
-		margin-top: 0.75rem;
-		margin-bottom: 0.25rem;
 		user-select: none;
 	}
 

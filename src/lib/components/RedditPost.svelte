@@ -1,6 +1,7 @@
 <script lang="ts">
 	import "$lib/default.scss";
     import type { RedditPostData } from "$lib/redditTypes";
+    import DateDisplay from "./DateDisplay.svelte";
     import RedditImagePreview from "./RedditImagePreview.svelte";
 
 	export let data: RedditPostData;
@@ -11,8 +12,7 @@
 		<a href={`https://reddit.com/r/${data.subreddit}`} target="_blank">r/{data.subreddit} </a>
 		<span>by </span>
 		<a href={`https://reddit.com/u/${data.author}`} target="_blank">u/{data.author} </a>
-		<span>at </span>
-		<span>{new Date(data.created_utc * 1000).toISOString().replace(/\.000/g, "")}</span>
+		<span><DateDisplay date={new Date(data.created_utc * 1000)} /></span>
 		<span> | </span>
 		<span>{data.score} 🠉</span>
 	</div>
