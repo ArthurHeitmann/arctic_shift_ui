@@ -313,20 +313,20 @@
 		{#if fun === Function.PostsSearch}
 			<div
 				class="row"
-				class:disabled-row={author.length == 0}
+				class:disabled-row={author.length == 0 && subreddit.length == 0}
 			>
 				<TextField
 					bind:text={title}
-					label="Title (only with 'Author')"
+					label="Title (only with 'Author' or 'Subreddit')"
 				/>
 				<TextField
 					bind:text={selftext}
-					label="Selftext (only with 'Author')"
+					label="Selftext (only with 'Author' or 'Subreddit')"
 				/>
 			</div>
 			<TextField
 				bind:text={url}
-				label="URL (exact match)"
+				label="URL (prefix match)"
 				transform={(text) => text.replace(/^\/?u(ser)?\//g, "")}
 				getError={(text) => text.length == 0 || text.length > 2 && !text.match(/^[a-zA-Z0-9_]+$/) ? null : "Invalid URL"}
 			/>
@@ -367,11 +367,11 @@
 			</div>
 			<div
 				class="row"
-				class:disabled-row={linkId.length == 0 && parentId.length == 0 && author.length == 0}
+				class:disabled-row={linkId.length == 0 && parentId.length == 0 && author.length == 0 && subreddit.length == 0}
 			>
 				<TextField
 					bind:text={body}
-					label="Body (only with 'Author', 'Link ID' or 'Parent Comment ID')"
+					label="Body (only with 'Author', 'Subreddit', 'Link ID' or 'Parent Comment ID')"
 				/>
 			</div>
 		{/if}

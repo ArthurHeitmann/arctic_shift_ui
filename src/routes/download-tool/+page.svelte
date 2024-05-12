@@ -168,7 +168,9 @@
 		</div>
 		<p>
 			Download posts and comments from a subreddit or user. Very large subreddits can take a long time to download.
-			In that case, you can maybe narrow down the time range.
+			In that case, you can maybe narrow down the time range. Alternatively, you can download 
+			<a href="https://academictorrents.com/details/56aa49f9653ba545f48df2e33679f014d2829c10" target="_blank">subreddit dumps through Academic Torrents</a>
+			or <a href="https://github.com/ArthurHeitmann/arctic_shift" target="_blank">monthly dumps</a>.
 		</p>
 		{#if !isSupported}
 			<div class="error big">
