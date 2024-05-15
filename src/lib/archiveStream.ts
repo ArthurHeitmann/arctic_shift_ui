@@ -79,7 +79,7 @@ export class ArchiveStream<T> {
 					this.hasError = false;
 					this.onStateChange.notify();
 				}
-				await sleep(75);
+				// await sleep(75);
 			} catch (e) {
 				console.error(e);
 				if (!this.hasError) {
@@ -107,7 +107,7 @@ export class ArchiveStream<T> {
 		if (!this.fileStream)
 			throw new Error("File stream not initialized");
 		this.abortController = new AbortController();
-		const response = await fetch(`${this.url}&limit=100&sort=asc&after=${this.currentDate}&meta-app=download-tool`, {
+		const response = await fetch(`${this.url}&limit=auto&sort=asc&after=${this.currentDate}&meta-app=download-tool`, {
 			signal: this.abortController?.signal,
 		});
 		const data = await response.json();

@@ -185,6 +185,7 @@
 					{ value: DownloadType.user, label: "u/" },
 				]}
 				bind:selected={downloadType}
+				onChange={() => name.length > 2 && loadStartDate()}
 			/>
 			<TextField
 				bind:text={name}

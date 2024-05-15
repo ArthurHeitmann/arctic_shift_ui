@@ -5,6 +5,7 @@
 	}
 	export let options: Option<any>[];
 	export let selected: any|null = null;
+	export let onChange: ((selected: any) => void)|undefined = undefined;
 	export let label: string = "";
 	export let canDeselect: boolean = false;
 	export let expand: boolean = false;
@@ -13,10 +14,14 @@
 
 	function select(option: Option<any>) {
 		selected = option.value;
+		if (onChange)
+			onChange(selected);
 	}
 
 	function deselect() {
 		selected = null;
+		if (onChange)
+			onChange(selected);
 	}
 </script>
 
