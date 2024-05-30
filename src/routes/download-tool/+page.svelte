@@ -1,7 +1,6 @@
 <script lang="ts">
 	import { apiUrl } from "$lib/const";
 	import DatePicker from "$lib/components/DatePicker.svelte";
-	import type { DateState } from "$lib/components/datePickerTypes";
 	import "./style.scss";
     import { CombinedArchiveStream } from "$lib/combinedArchiveStream";
     import { ArchiveStream } from "$lib/archiveStream";
@@ -11,6 +10,7 @@
     import TextField from "$lib/components/TextField.svelte";
     import OptionSelector from "$lib/components/OptionSelector.svelte";
 	import homeSvg from "$lib/images/home.svg";
+    import { numberToShort } from "$lib/utils";
 
 	enum DownloadType {
 		subreddit = "subreddit",
@@ -26,6 +26,7 @@
 	let isNameValid = false;
 	let startDate: Date|null = new Date("2005-01-01T00:00:00.000Z");
 	let endDate: Date|null = null;
+	let info: any|null = null;
 	let downloadPosts = true;
 	let downloadComments = true;
 	let archiveStream: CombinedArchiveStream|null = null;
@@ -41,27 +42,31 @@
 		throw e;
 	}
 
-	function setDownloadType(type: DownloadType) {
-		if (downloadType === type)
-			return;
-		downloadType = type;
-		name = "";
-	}
-
 	async function loadStartDate() {
 		if (name.length < 2)
 			onError(new Error("Name must be at least 2 characters long"));
-		const response = await fetch(`${apiUrl}/api/utils/min?${downloadType}=${name}`);
+		const response = await fetch(`${apiUrl}/api/utils/min?${downloadType}=${name}&meta-app=download-tool`);
 		const data = await response.json();
 		if (data.error)
 			onError(new Error(data.error));
 		if (data.data === null)
-			onError(new Error("Subreddit or user not found"));
+			onError(new Error(`No ${downloadType} with that name found`));
 		error = null;
 		const newDate = new Date(Date.parse(data.data) - 1);
 		newDate.setHours(0, 0, 0, 0);
 		startDate = newDate;
 		isNameValid = true;
+
+		let infoFetchUrl: string;
+		if (downloadType === DownloadType.subreddit)
+			infoFetchUrl = `${apiUrl}/api/subreddits/search?subreddit=${name}&meta-app=download-tool`;
+		else
+			infoFetchUrl = `${apiUrl}/api/users/search?author=${name}&meta-app=download-tool`;
+		const infoResponse = await fetch(infoFetchUrl);
+		const infoData = await infoResponse.json();
+		info = infoData.data?.[0];
+		console.log(info);
+		console.log(info?._meta?.num_posts);
 	}
 
 	async function start() {
@@ -178,7 +183,7 @@
 				<a href="https://caniuse.com/?search=showOpenFilePicker%20" target="_blank">(See browser support)</a>
 			</div>
 		{/if}
-		<div class="row">
+		<div class="row name-row">
 			<OptionSelector
 				options={[
 					{ value: DownloadType.subreddit, label: "r/" },
@@ -193,6 +198,11 @@
 				on:input={() => isNameValid = false}
 				placeholder={`${downloadTypeNames[downloadType]} name`}
 			/>
+			{#if isNameValid && info}
+				<div class="info">
+					Approximately {numberToShort(info?._meta?.num_posts ?? 0)} posts and {numberToShort(info?._meta?.num_comments ?? 0)} comments
+				</div>
+			{/if}
 		</div>
 
 		<div class="row">

@@ -53,3 +53,44 @@ function _timePassedSince(time: number): string {
 	const timeStr = _timePassedSince(time);
 	return includeAdverb ? `${timeStr} ${adverb}` : timeStr;
 }
+
+function _numberToShort(num: number): { n: number, s?: string } {
+	switch (Math.abs(num).toString().length) {
+		case 0:
+		case 1:
+		case 2:
+		case 3:
+			return { n: num };
+		case 4:
+			return { n: floorTo(num / 1000, 2), s: "k"};
+		case 5:
+		case 6:
+			return { n: floorTo(num / 1000, 0), s: "k"};
+		case 7:
+			return { n: floorTo(num / 1000000, 2), s: "m"};
+		case 8:
+		case 9:
+			return { n: floorTo(num / 1000000, 0), s: "m"};
+		case 10:
+			return { n: floorTo(num / 1000000000, 2), s: "b"};
+		case 11:
+		case 12:
+			return { n: floorTo(num / 1000000000, 0), s: "b"};
+		case 13:
+			return { n: floorTo(num / 1000000000000, 2), s: "t"};
+		case 14:
+		case 15:
+			return { n: floorTo(num / 1000000000000, 0), s: "t"};
+		default:
+			return { n: 0, s: " - ∞" }
+	}
+}
+
+/** convert long numbers like 11,234 to 11k */
+export function numberToShort(num: number): string {
+	return Object.values(_numberToShort(num)).join("");
+}
+
+export function floorTo(number: number, precision: number): number {
+	return Math.floor(number * Math.pow(10, precision)) / Math.pow(10, precision);
+}

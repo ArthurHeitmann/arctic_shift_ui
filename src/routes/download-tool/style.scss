@@ -37,6 +37,17 @@
 	}
 }
 
+.name-row {
+	width: 100%;
+
+	> .info {
+		flex-grow: 1;
+		text-align: right;
+		font-size: 0.9em;
+		font-weight: normal;
+	}
+}
+
 .title-row {
 	width: 100%;
 	justify-content: space-between;

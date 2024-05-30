@@ -398,6 +398,9 @@
 				on:click={search}
 			>Search</button>
 		</div>
+		{#if error && error.toLowerCase().includes("timeout")}
+			<p>If you're experiencing timeouts, try reducing the limit or narrowing down the time frame.</p>
+		{/if}
 	</div>
 
 	{#if showSettings}
