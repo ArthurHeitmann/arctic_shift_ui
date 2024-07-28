@@ -65,8 +65,6 @@
 		const infoResponse = await fetch(infoFetchUrl);
 		const infoData = await infoResponse.json();
 		info = infoData.data?.[0];
-		console.log(info);
-		console.log(info?._meta?.num_posts);
 	}
 
 	async function start() {

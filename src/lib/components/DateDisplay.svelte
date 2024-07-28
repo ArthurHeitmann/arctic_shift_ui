@@ -10,8 +10,7 @@
 {:else if $dateDisplay === DateDisplay.local}
 	at {date.toLocaleString()}
 {:else if $dateDisplay === DateDisplay.relative}
-	{timePassedSince(date.getTime() / 1000)} ago
+	{timePassedSince(date.getTime() / 1000)}
 {:else}
 	{date.toISOString().replace(/\.000/g, "")}
 {/if}
-

@@ -125,7 +125,7 @@ export class ArchiveStream<T> {
 			newDate += 1000;
 		this.currentDate = newDate;
 		this.onNewData.notify(data.data);
-		this.writeToFile(data.data);
+		await this.writeToFile(data.data);
 	}
 
 	private async writeToFile(data: T[]) {
