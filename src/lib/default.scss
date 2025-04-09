@@ -351,3 +351,20 @@ td code {
     --fab-root-shadow: #00000026;
   }
 }
+
+.row {
+  display: flex;
+}
+
+.title-row {
+	width: 100%;
+	justify-content: space-between;
+	
+	> :global(*) {
+		flex: initial;
+	}
+}
+
+.hidden {
+  display: none !important;
+}

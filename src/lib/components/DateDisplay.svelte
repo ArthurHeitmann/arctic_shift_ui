@@ -1,5 +1,5 @@
 <script lang="ts">
-    import { timePassedSince } from "$lib/utils";
+	import { timePassedSince } from "$lib/utils";
 	import { DateDisplay, dateDisplay } from "./searchPreferences";
 
 	export let date: Date;

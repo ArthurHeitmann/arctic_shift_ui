@@ -1,7 +1,7 @@
 <script lang="ts">
 	import "$lib/default.scss";
-    import type { RedditCommentData } from "$lib/redditTypes";
-    import DateDisplay from "./DateDisplay.svelte";
+	import type { RedditCommentData } from "$lib/redditTypes";
+	import DateDisplay from "./DateDisplay.svelte";
 
 	export let data: RedditCommentData;
 </script>

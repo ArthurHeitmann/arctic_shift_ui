@@ -1,9 +1,8 @@
 <script lang="ts">
-    import type { ArchiveStream } from "$lib/archiveStream";
+	import type { ArchiveStream } from "$lib/archiveStream";
 	import "$lib/default.scss";
-    import type { RedditCommentData, RedditPostData } from "$lib/redditTypes";
-    import { formatDuration, roundTo } from "$lib/utils";
-    import { onDestroy, onMount } from "svelte";
+	import { formatDurationHHMMSS, roundTo } from "$lib/utils";
+	import { onDestroy, onMount } from "svelte";
 
 	export let name: string;
 	export let archiveStream: ArchiveStream<any>;
@@ -63,7 +62,7 @@
 <div class="archive-stream-feedback">
 	<div class="row">
 		<div>
-			Downloaded {downloadedThings} {name}s in {formatDuration(runTime)}
+			Downloaded {downloadedThings} {name}s in {formatDurationHHMMSS(runTime)}
 		</div>
 		<div>
 		{#if isDone}

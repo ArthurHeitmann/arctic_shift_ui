@@ -7,9 +7,12 @@
 	export let type: string = "text";
 	export let min: string = "";
 	export let max: string = "";
+	export let simpleDesign: boolean = false;
+	export let width: string|null = null;
 	export let transform: ((text: string) => string)|null = null;
 	export let getError: (text: string) => string|null = () => null;
 	export let onChange: ((text: string) => void)|null = null;
+	export let onEnter: (() => void)|null = null;
 
 	let error: string|null = null;
 
@@ -25,9 +28,23 @@
 		if (onChange)
 			onChange(text);
 	}
+
+	function onKeyPress(e: KeyboardEvent) {
+		if (e.key === "Enter") {
+			if (onEnter) {
+				onTextChange(e);
+				onEnter();
+			}
+		}
+	}
 </script>
 
-<label class="text-field">
+<label
+	class="text-field"
+	class:simpleDesign
+	class:fancyDesign={!simpleDesign}
+	style={width ? `width: ${width}` : ""}
+	>
 	{#if label}
 		<div class="label">
 			{label}
@@ -42,6 +59,7 @@
 			min={min}
 			max={max}
 			on:change={onTextChange}
+			on:keypress={onEnter ? onKeyPress : undefined}
 		/>
 		<div
 			class="error"
@@ -52,31 +70,46 @@
 
 <style lang="scss">
 	.text-field {
-	  display: flex;
-	  flex-direction: column;
-	//   border: 1px solid lightblue;
+		display: flex;
+		flex-direction: column;
 
-	  .label {
-		font-size: 0.8rem;
-		margin-left: 0.5rem;
-		margin-top: 0.75rem;
-		margin-bottom: 0.25rem;
-	  }
-
-	  .input-wrapper {
-		height: 2rem;
-		line-height: 2rem;
-	  	padding: 0 0.75rem;
-		background: var(--bg-el2-color);
-		border: 1px solid var(--border-color);
-		border-radius: 1rem;
-		position: relative;
-
-		input {
-			color-scheme: dark;
-			width: 100%;
+		.label {
+			font-size: 0.8rem;
+			margin-left: 0.5rem;
+			margin-top: 0.75rem;
+			margin-bottom: 0.25rem;
 		}
-	  }
+
+		.input-wrapper {
+			height: 2rem;
+			line-height: 2rem;
+			padding: 0 0.75rem;
+			position: relative;
+
+			input {
+				color-scheme: dark;
+				width: 100%;
+			}
+		}
+
+		&.simpleDesign {
+			.input-wrapper {
+				border-bottom: 2px solid var(--border-color);
+				transition: border-color 0.2s ease;
+
+				&:focus-within {
+					border-bottom: 2px solid var(--primary-faint);
+				}
+			}
+		}
+
+		&.fancyDesign {
+			.input-wrapper {
+				background: var(--bg-el2-color);
+				border: 1px solid var(--border-color);
+				border-radius: 1rem;
+			}
+		}
 	}
 
 	.error {

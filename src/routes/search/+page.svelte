@@ -2,10 +2,10 @@
 	import { onMount } from "svelte";
 	import "$lib/default.scss";
 	import TextField from "$lib/components/TextField.svelte";
-    import OptionSelector from "$lib/components/OptionSelector.svelte";
-    import type { RedditCommentData, RedditPostData } from "$lib/redditTypes";
-    import RedditPost from "$lib/components/RedditPost.svelte";
-    import RedditComment from "$lib/components/RedditComment.svelte";
+	import OptionSelector from "$lib/components/OptionSelector.svelte";
+	import type { RedditCommentData, RedditPostData } from "$lib/redditTypes";
+	import RedditPost from "$lib/components/RedditPost.svelte";
+	import RedditComment from "$lib/components/RedditComment.svelte";
 	import homeSvg from "$lib/images/home.svg";
 	import settingsSvg from "$lib/images/settings.svg";
 	import Preferences from "./Preferences.svelte"
@@ -42,7 +42,7 @@
 	let error: string|null = null;
 	let posts: RedditPostData[]|null = null;
 	let comments: RedditCommentData[]|null = null;
-	$: currentData = fun === Function.PostsSearch ? posts : null ?? fun === Function.CommentsSearch ? comments : null;
+	$: currentData = (fun === Function.PostsSearch ? posts : null) ?? (fun === Function.CommentsSearch ? comments : null);
 	let previousHistory: string[] = [];
 
 	onMount(() => {
@@ -77,7 +77,7 @@
 		return null;
 	}
 
-	async function search(_: any, clearPrevious = true) {
+	async function search(_?: any, clearPrevious = true) {
 		if (clearPrevious)
 			previousHistory = [];
 		error = null;
@@ -241,7 +241,7 @@
 
 <svelte:head>
 	<title>Search through reddit data</title>
-	<meta name="description" content="Search through reddit post and comment, using parameters like subreddit, author, date, body, etc.">
+	<meta name="description" content="Search through all reddit posts and comments, using parameters like subreddit, author, date, body, etc.">
 </svelte:head>
 
 <div class="search">
@@ -272,12 +272,14 @@
 				label="Subreddit"
 				transform={(text) => text.replace(/^\/?r\//g, "")}
 				getError={(text) => text.length == 0 || text.length >= 2 && text.match(/^[a-zA-Z0-9_\-]+$/) ? null : "Invalid subreddit"}
+				onEnter={search}
 			/>
 			<TextField
 				bind:text={author}
 				label="Author"
 				transform={(text) => text.replace(/^\/?u(ser)?\//g, "")}
 				getError={(text) => text.length == 0 || text.length >= 2 && text.match(/^[a-zA-Z0-9_\-\[\]]+$/) ? null : "Invalid author"}
+				onEnter={search}
 			/>
 		</div>
 		<div class="row">
@@ -285,11 +287,13 @@
 				bind:text={after}
 				label="After (UTC)"
 				type="datetime-local"
+				onEnter={search}
 			/>
 			<TextField
 				bind:text={before}
 				label="Before (UTC)"
 				type="datetime-local"
+				onEnter={search}
 			/>
 		</div>
 		<div class="row">
@@ -300,6 +304,7 @@
 				min="1"
 				max="100"
 				getError={verifyLimit}
+				onEnter={search}
 			/>
 			<OptionSelector
 				label="Date Sort"
@@ -318,10 +323,12 @@
 				<TextField
 					bind:text={title}
 					label="Title (only with 'Author' or 'Subreddit')"
+					onEnter={search}
 				/>
 				<TextField
 					bind:text={selftext}
 					label="Selftext (only with 'Author' or 'Subreddit')"
+					onEnter={search}
 				/>
 			</div>
 			<TextField
@@ -329,6 +336,7 @@
 				label="URL (prefix match)"
 				transform={(text) => text.replace(/^\/?u(ser)?\//g, "")}
 				getError={(text) => text.length == 0 || text.length > 2 && !text.match(/^[a-zA-Z0-9_]+$/) ? null : "Invalid URL"}
+				onEnter={search}
 			/>
 			<div class="row">
 				<OptionSelector
@@ -357,12 +365,14 @@
 					label="Link ID"
 					transform={(text) => text.replace(/^t3_/, "")}
 					getError={(text) => text.length == 0 || text.match(/^[a-z0-9]+$/) ? null : "Invalid Base36 ID"}
+					onEnter={search}
 				/>
 				<TextField
 					bind:text={parentId}
 					label="Parent Comment ID"
 					transform={(text) => text.replace(/^t1_/, "")}
 					getError={(text) => text.length == 0 || text.match(/^[a-z0-9]+$/) ? null : "Invalid Base36 ID"}
+					onEnter={search}
 				/>
 			</div>
 			<div
@@ -372,6 +382,7 @@
 				<TextField
 					bind:text={body}
 					label="Body (only with 'Author', 'Subreddit', 'Link ID' or 'Parent Comment ID')"
+					onEnter={search}
 				/>
 			</div>
 		{/if}
@@ -490,8 +501,6 @@
 	}
 
 	.title-row {
-		justify-content: space-between;
-		
 		> :global(*) {
 			flex: initial;
 		}

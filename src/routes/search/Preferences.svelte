@@ -1,7 +1,7 @@
 <script lang="ts">
 	import "$lib/default.scss";
-    import OptionSelector from "$lib/components/OptionSelector.svelte";
-    import { blurNsfw, dateDisplay, DateDisplay } from "$lib/components/searchPreferences";
+	import OptionSelector from "$lib/components/OptionSelector.svelte";
+	import { blurNsfw, dateDisplay, DateDisplay } from "$lib/components/searchPreferences";
 </script>
 
 <div class="preferences pane">

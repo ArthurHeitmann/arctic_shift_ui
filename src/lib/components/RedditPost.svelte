@@ -1,8 +1,8 @@
 <script lang="ts">
 	import "$lib/default.scss";
-    import type { RedditPostData } from "$lib/redditTypes";
-    import DateDisplay from "./DateDisplay.svelte";
-    import RedditImagePreview from "./RedditImagePreview.svelte";
+	import type { RedditPostData } from "$lib/redditTypes";
+	import DateDisplay from "./DateDisplay.svelte";
+	import RedditImagePreview from "./RedditImagePreview.svelte";
 
 	export let data: RedditPostData;
 </script>

@@ -1,7 +1,7 @@
 <script lang="ts">
 	import "$lib/default.scss";
 	import type { DateState } from "$lib/components/datePickerTypes";
-    import TextField from "./TextField.svelte";
+	import TextField from "./TextField.svelte";
 
 	export let label: string;
 	export let onChange: (date: Date|null) => void;

@@ -17,6 +17,7 @@
 		</a>
 		<a href="/download-tool">Download tool</a>
 		<a href="/search">Search</a>
+		<a href="/live-charts">Live Charts</a>
 	</div>
 	<div class="end">
 		<a href="https://github.com/ArthurHeitmann/arctic_shift_ui" target="_blank">

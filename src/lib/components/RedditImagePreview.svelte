@@ -1,5 +1,5 @@
 <script lang="ts">
-    import type { RedditPostData } from "$lib/redditTypes";
+	import type { RedditPostData } from "$lib/redditTypes";
 	import { blurNsfw } from "./searchPreferences";
 
 	export let data: RedditPostData;

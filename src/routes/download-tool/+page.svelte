@@ -2,15 +2,15 @@
 	import { apiUrl } from "$lib/const";
 	import DatePicker from "$lib/components/DatePicker.svelte";
 	import "./style.scss";
-    import { CombinedArchiveStream } from "$lib/combinedArchiveStream";
-    import { ArchiveStream } from "$lib/archiveStream";
-    import type { RedditCommentData, RedditPostData } from "$lib/redditTypes";
-    import { browser } from "$app/environment";
-    import ArchiveStreamFeedback from "$lib/components/archiveStreamFeedback.svelte";
-    import TextField from "$lib/components/TextField.svelte";
-    import OptionSelector from "$lib/components/OptionSelector.svelte";
+	import { CombinedArchiveStream } from "$lib/combinedArchiveStream";
+	import { ArchiveStream } from "$lib/archiveStream";
+	import type { RedditCommentData, RedditPostData } from "$lib/redditTypes";
+	import { browser } from "$app/environment";
+	import ArchiveStreamFeedback from "$lib/components/archiveStreamFeedback.svelte";
+	import TextField from "$lib/components/TextField.svelte";
+	import OptionSelector from "$lib/components/OptionSelector.svelte";
 	import homeSvg from "$lib/images/home.svg";
-    import { numberToShort } from "$lib/utils";
+	import { numberToShort } from "$lib/utils";
 
 	enum DownloadType {
 		subreddit = "subreddit",

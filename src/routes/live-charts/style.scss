@@ -1,0 +1,53 @@
+
+.charts {
+	display: flex;
+	flex-direction: column;
+	gap: 1rem;
+	width: min(100%, 50rem);
+	margin: 1rem auto;
+	padding: 1rem;
+
+	.charts-wrapper {
+		display: flex;
+		flex-direction: column;
+		gap: 1rem;
+	}
+}
+
+.chart-title {
+	text-align: center;
+	font-weight: bold;
+}
+
+.chart-below {
+	display: flex;
+	justify-content: space-between;
+	flex-wrap: wrap;
+}
+
+.date-range {
+	display: flex;
+	align-items: center;
+	gap: 0.5rem;
+}
+
+.legend {
+	display: flex;
+	gap: 0.5rem;
+
+	.legend-item {
+		display: flex;
+		align-items: center;
+		gap: 0.5rem;
+
+		.legend-color {
+			width: 0.8rem;
+			height: 0.8rem;
+			border-radius: 0.25rem;
+		}
+
+		.legend-label {
+			font-size: 0.7rem;
+		}
+	}
+}
