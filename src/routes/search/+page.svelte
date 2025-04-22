@@ -9,16 +9,19 @@
 	import homeSvg from "$lib/images/home.svg";
 	import settingsSvg from "$lib/images/settings.svg";
 	import Preferences from "./Preferences.svelte"
+    import IdInputField from "./IdInputField.svelte";
+    import { IdCategory, IdInput } from "./IdInput";
 
 	enum Function {
-		PostIds="post_ids",
-		CommentIds="comment_ids",
 		PostsSearch="posts_search",
 		CommentsSearch="comments_search",
+		Ids="ids",
 	}
 
+	type RedditData = RedditPostData|RedditCommentData;
+
 	let fun = Function.PostsSearch;
-	// search parameters
+	// post and comment search parameters
 	let subreddit = "";
 	let author = "";
 	let after = "";
@@ -35,6 +38,8 @@
 	let linkId = "";
 	let parentId = "";
 	let body = "";
+	// id search parameters
+	let ids = [new IdInput(IdCategory.post, "")];
 
 	let showSettings = false;
 
@@ -42,7 +47,12 @@
 	let error: string|null = null;
 	let posts: RedditPostData[]|null = null;
 	let comments: RedditCommentData[]|null = null;
-	$: currentData = (fun === Function.PostsSearch ? posts : null) ?? (fun === Function.CommentsSearch ? comments : null);
+	let idResults: RedditData[]|null = null;
+	$: currentData = {
+		[Function.PostsSearch]: posts,
+		[Function.CommentsSearch]: comments,
+		[Function.Ids]: idResults,
+	}[fun];
 	let previousHistory: string[] = [];
 
 	onMount(() => {
@@ -64,6 +74,11 @@
 		linkId = params.get("link_id") || "";
 		parentId = params.get("parent_id") || "";
 		body = params.get("body") || "";
+		const idsStr = params.get("ids");
+		if (idsStr) {
+			const idsArray = IdInput.fromIdStrings(idsStr);
+			ids = idsArray.filter(id => id !== null);
+		}
 	});
 
 	function verifyLimit(limitStr: string): string|null {
@@ -77,7 +92,16 @@
 		return null;
 	}
 
-	async function search(_?: any, clearPrevious = true) {
+	function search(_?: any, clearPrevious = true) {
+		if (fun === Function.PostsSearch || fun === Function.CommentsSearch)
+			searchPostsOrComments(clearPrevious);
+		else if (fun === Function.Ids)
+			searchIds();
+		else
+			error = "Not implemented";
+	}
+
+	async function searchPostsOrComments(clearPrevious: boolean) {
 		if (clearPrevious)
 			previousHistory = [];
 		error = null;
@@ -173,6 +197,66 @@
 		loading = false;
 	}
 
+	async function searchIds() {
+		error = null;
+		loading = true;
+		const filteredIds = ids.filter(id => id.id.length > 0);
+		const ownUrlParams = new URLSearchParams();
+		ownUrlParams.append("fun", fun);
+		ownUrlParams.append("ids", filteredIds.map(id => id.toIdString()).join(","));
+		const newOwnUrl = new URL(location.href);
+		newOwnUrl.search = ownUrlParams.toString();
+		history.replaceState(null, "", newOwnUrl.toString());
+		
+		const commonParams = new URLSearchParams();
+		commonParams.append("md2html", "true");
+		commonParams.append("meta-app", "search-tool");
+		const postIds = filteredIds.filter(id => id.category == IdCategory.post).map(id => id.id);
+		const commentIds = filteredIds.filter(id => id.category == IdCategory.comment).map(id => id.id);
+		const urls: string[] = [];
+		if (postIds.length > 0)
+			urls.push(`https://arctic-shift.photon-reddit.com/api/posts/ids?ids=${postIds.join(",")}&${commonParams.toString()}`);
+		if (commentIds.length > 0)
+			urls.push(`https://arctic-shift.photon-reddit.com/api/comments/ids?ids=${commentIds.join(",")}&${commonParams.toString()}`);
+		if (urls.length == 0) {
+			error = "No IDs";
+			loading = false;
+			return;
+		}
+		try {
+			const combinedData: (any[]|null)[] = await Promise.all(urls.map(async requestUrl => {
+				const response = await fetch(requestUrl);
+				try {
+					const data = await response.json();
+					if (data.error) {
+						error = data.error;
+						return null;
+					}
+					return data.data;
+				} catch (e) {
+					if (!response.ok) {
+						error = `Error ${response.status} ${response.statusText}`;
+					}
+					else {
+						error = (e as Error).message;
+					}
+					return null;
+				}
+			}));
+			if (error) {
+				loading = false;
+				return;
+			}
+			const results = combinedData.filter(data => data !== null).flat();
+			idResults = results;
+
+		}
+		catch (e) {
+			error = (e as Error).message;
+		}
+		loading = false;
+	}
+
 	function download() {
 		let data: object[]|null = null;
 		let name: string|null = null;
@@ -184,6 +268,10 @@
 			data = comments;
 			name = "comments";
 		}
+		else if (fun == Function.Ids) {
+			data = idResults;
+			name = "ids";
+		}
 		if (!data || !name)
 			return;
 		const blob = new Blob([JSON.stringify(data, null, "\t")], { type: "application/json" });
@@ -194,7 +282,7 @@
 		a.click();
 	}
 
-	function searchPagination(changeParameters: (data: RedditPostData[]|RedditCommentData[]) => void) {
+	function searchPagination(changeParameters: (data: RedditData[]) => void) {
 		if (!currentData)
 			return;
 		changeParameters(currentData);
@@ -260,61 +348,62 @@
 			options={[
 				{ value: Function.PostsSearch, label: "Posts Search" },
 				{ value: Function.CommentsSearch, label: "Comments Search" },
-				// { value: Function.PostIds, label: "Post IDs" },
-				// { value: Function.CommentIds, label: "Comment IDs" },
+				{ value: Function.Ids, label: "ID Lookup" },
 			]}
 			bind:selected={fun}
 			expand={true}
 		/>
-		<div class="row">
-			<TextField
-				bind:text={subreddit}
-				label="Subreddit"
-				transform={(text) => text.replace(/^\/?r\//g, "")}
-				getError={(text) => text.length == 0 || text.length >= 2 && text.match(/^[a-zA-Z0-9_\-]+$/) ? null : "Invalid subreddit"}
-				onEnter={search}
-			/>
-			<TextField
-				bind:text={author}
-				label="Author"
-				transform={(text) => text.replace(/^\/?u(ser)?\//g, "")}
-				getError={(text) => text.length == 0 || text.length >= 2 && text.match(/^[a-zA-Z0-9_\-\[\]]+$/) ? null : "Invalid author"}
-				onEnter={search}
-			/>
-		</div>
-		<div class="row">
-			<TextField
-				bind:text={after}
-				label="After (UTC)"
-				type="datetime-local"
-				onEnter={search}
-			/>
-			<TextField
-				bind:text={before}
-				label="Before (UTC)"
-				type="datetime-local"
-				onEnter={search}
-			/>
-		</div>
-		<div class="row">
-			<TextField
-				bind:text={limit}
-				label="Limit"
-				type="number"
-				min="1"
-				max="100"
-				getError={verifyLimit}
-				onEnter={search}
-			/>
-			<OptionSelector
-				label="Date Sort"
-				options={[
-					{ value: "asc", label: "Ascending" },
-					{ value: "desc", label: "Descending" },
-				]}
-				bind:selected={sort}
-			/>
-		</div>
+		{#if fun === Function.PostsSearch || fun === Function.CommentsSearch}
+			<div class="row">
+				<TextField
+					bind:text={subreddit}
+					label="Subreddit"
+					transform={(text) => text.replace(/^\/?r\//g, "")}
+					getError={(text) => text.length == 0 || text.length >= 2 && text.match(/^[a-zA-Z0-9_\-]+$/) ? null : "Invalid subreddit"}
+					onEnter={search}
+				/>
+				<TextField
+					bind:text={author}
+					label="Author"
+					transform={(text) => text.replace(/^\/?u(ser)?\//g, "")}
+					getError={(text) => text.length == 0 || text.length >= 2 && text.match(/^[a-zA-Z0-9_\-\[\]]+$/) ? null : "Invalid author"}
+					onEnter={search}
+				/>
+			</div>
+			<div class="row">
+				<TextField
+					bind:text={after}
+					label="After (UTC)"
+					type="datetime-local"
+					onEnter={search}
+				/>
+				<TextField
+					bind:text={before}
+					label="Before (UTC)"
+					type="datetime-local"
+					onEnter={search}
+				/>
+			</div>
+			<div class="row">
+				<TextField
+					bind:text={limit}
+					label="Limit"
+					type="number"
+					min="1"
+					max="100"
+					getError={verifyLimit}
+					onEnter={search}
+				/>
+				<OptionSelector
+					label="Date Sort"
+					options={[
+						{ value: "asc", label: "Ascending" },
+						{ value: "desc", label: "Descending" },
+					]}
+					bind:selected={sort}
+				/>
+			</div>
+		{/if}
 		{#if fun === Function.PostsSearch}
 			<div
 				class="row"
@@ -385,6 +474,28 @@
 					onEnter={search}
 				/>
 			</div>
+		{:else if fun === Function.Ids}
+			<div class="gap"></div>
+			{#each ids as id, i (id.toIdString() || (`$i: ${i}`))}
+				<IdInputField
+					id={id}
+					onChange={(newIds) => {
+						ids.splice(i, 1, ...newIds);
+						ids = [...ids];
+					}}
+					onRemove={() => {
+						ids.splice(i, 1);
+						ids = [...ids];
+					}}
+				/>
+			{/each}
+			<button
+				class="add-button transparent-button"
+				on:click={() => {
+					ids.push(new IdInput(IdCategory.post, ""));
+					ids = [...ids];
+				}}
+			></button>
 		{/if}
 
 		<div class="gap"></div>
@@ -397,7 +508,7 @@
 			>
 				<img src={settingsSvg} alt="settings" />
 			</button>
-			{#if fun === Function.PostsSearch && posts?.length || fun === Function.CommentsSearch && comments?.length}
+			{#if fun === Function.PostsSearch && posts?.length || fun === Function.CommentsSearch && comments?.length || fun === Function.Ids && idResults?.length}
 				<button
 					class="submit-button secondary"
 					on:click={download}
@@ -418,7 +529,7 @@
 		<Preferences/>
 	{/if}
 
-	{#if currentData}
+	{#if currentData && fun !== Function.Ids}
 		<div class="pagination">
 			<button
 				class="submit-button"
@@ -448,10 +559,23 @@
 			{#each comments as comment (comment.id)}
 				<RedditComment data={comment} />
 			{/each}
+		{:else if fun === Function.Ids && idResults !== null}
+			{#if idResults.length == 0}
+				<p>Nothing found o_O</p>
+			{/if}
+			{#each idResults as thing (thing.id)}
+				{#if "title" in thing}
+					<RedditPost data={thing} />
+				{:else if "body" in thing}
+					<RedditComment data={thing} />
+				{:else}
+					<p>Unknown type</p>
+				{/if}
+			{/each}
 		{/if}
 	</div>
 
-	{#if currentData && currentData.length > 5}
+	{#if currentData && currentData.length > 5 && fun !== Function.Ids}
 		<div class="pagination">
 			<button
 				class="submit-button"
@@ -588,5 +712,14 @@
 			opacity: .5;
 			pointer-events: none;
 		}
+	}
+
+	.add-button {
+		height: 2rem;
+		width: 2rem;
+		line-height: 2rem;
+		align-self: flex-start;
+		background-image: url("$lib/images/add.svg");
+		background-size: contain;
 	}
 </style>

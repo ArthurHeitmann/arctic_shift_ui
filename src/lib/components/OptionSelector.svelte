@@ -98,7 +98,7 @@
 		}
 
 		.option {
-			height: 2rem;
+			min-height: 2rem;
 			line-height: 2rem;
 			padding: 0 0.75rem;
 			background: var(--bg-el2-color);

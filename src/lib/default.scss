@@ -368,3 +368,17 @@ td code {
 .hidden {
   display: none !important;
 }
+
+.transparent-button {
+  background-color: unset;
+  border-radius: 50%;
+  transition: background-color .25s ease;
+
+  &:where(:hover, :focus-visible) {
+    background-color: var(--transparent-btn-hover);
+  }
+
+  &:active {
+    background-color: var(--transparent-btn-active);
+  }
+}
