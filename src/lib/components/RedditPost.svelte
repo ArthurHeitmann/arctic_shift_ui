@@ -3,7 +3,7 @@
 	import type { RedditPostData } from "$lib/redditTypes";
 	import DateDisplay from "./DateDisplay.svelte";
 	import RedditImagePreview from "./RedditImagePreview.svelte";
-
+	import WaybackButton from "$lib/components/WaybackButton.svelte";
 	export let data: RedditPostData;
 </script>
 
@@ -17,7 +17,9 @@
 		<span>{data.score} 🠉</span>
 	</div>
 	<div class="title long-text">{data.title}</div>
-	{#if data.url && !data.url.endsWith(data.permalink)}
+	<div class="post-actions">
+		<WaybackButton post={data} size="small" />
+	</div>	{#if data.url && !data.url.endsWith(data.permalink)}
 		<div class="url-row">
 			<a href={data.url} class="url long-url" target="_blank">{data.url}</a>
 			{#if data.preview}
@@ -91,5 +93,13 @@
 	.long-text {
 		overflow: hidden;
 		text-overflow: ellipsis;
+	}
+	.post-actions {
+		display: flex;
+		gap: 8px;
+		align-items: center;
+		margin-top: 8px;
+		padding-top: 8px;
+		border-top: 1px solid #eee;
 	}
 </style>
