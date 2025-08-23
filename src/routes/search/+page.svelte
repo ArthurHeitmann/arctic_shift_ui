@@ -4,13 +4,15 @@
 	import TextField from "$lib/components/TextField.svelte";
 	import OptionSelector from "$lib/components/OptionSelector.svelte";
 	import type { RedditCommentData, RedditPostData } from "$lib/redditTypes";
-	import RedditPost from "$lib/components/RedditPost.svelte";
-	import RedditComment from "$lib/components/RedditComment.svelte";
+	import RedditPost from "$lib/components/reddit/RedditPost.svelte";
+	import RedditComment from "$lib/components/reddit/RedditComment.svelte";
 	import homeSvg from "$lib/images/home.svg";
 	import settingsSvg from "$lib/images/settings.svg";
 	import Preferences from "./Preferences.svelte"
     import IdInputField from "./IdInputField.svelte";
     import { IdCategory, IdInput } from "./IdInput";
+    import { type ContextMenuItem } from "$lib/components/contextMenu/contextMenuTypes";
+    import { copyToClipboard } from "$lib/utils";
 
 	enum Function {
 		PostsSearch="posts_search",
@@ -44,6 +46,7 @@
 	let showSettings = false;
 
 	let loading = false;
+	let hasReachedEnd = false;
 	let error: string|null = null;
 	let posts: RedditPostData[]|null = null;
 	let comments: RedditCommentData[]|null = null;
@@ -80,6 +83,32 @@
 			ids = idsArray.filter(id => id !== null);
 		}
 	});
+
+	function resetAllFiltersFor(funToReset: Function) {
+		if (funToReset === Function.PostsSearch || funToReset === Function.CommentsSearch) {
+			subreddit = "";
+			author = "";
+			after = "";
+			before = "";
+			limit = "10";
+			sort = "desc";
+		}
+		if (funToReset === Function.PostsSearch) {
+			over18 = null;
+			spoiler = null;
+			title = "";
+			selftext = "";
+			url = "";
+		}
+		if (funToReset === Function.CommentsSearch) {
+			linkId = "";
+			parentId = "";
+			body = "";
+		}
+		if (funToReset === Function.Ids) {
+			ids = [new IdInput(IdCategory.post, "")];
+		}
+	}
 
 	function verifyLimit(limitStr: string): string|null {
 		if (limitStr.length == 0)
@@ -189,7 +218,7 @@
 				posts = data.data;
 			else if (fun == Function.CommentsSearch)
 				comments = data.data;
-
+			hasReachedEnd = data.data.length < (Number(limit) || 10);
 		}
 		catch (e) {
 			error = (e as Error).message;
@@ -325,6 +354,70 @@
 			}
 		});
 	}
+
+	function getPostContextMenuItems(data: RedditPostData): ContextMenuItem[] {
+		const items: ContextMenuItem[] = [];
+		const permalink = `https://www.reddit.com${data.permalink}`;
+		items.push({
+			label: "Copy reddit post URL",
+			onClick: () => copyToClipboard(permalink),
+		});
+		if (data.url !== permalink) {
+			items.push({
+				label: "Copy post link",
+				onClick: () => copyToClipboard(data.url),
+			});
+		}
+		items.push({
+			label: "View all comments",
+			onClick: () => {
+				resetAllFiltersFor(Function.CommentsSearch);
+				fun = Function.CommentsSearch;
+				linkId = data.id;
+				search();
+			},
+		});
+		return items;
+	}
+
+	function getCommentContextMenuItems(data: RedditCommentData): ContextMenuItem[] {
+		const items: ContextMenuItem[] = [];
+		const permalink = `https://www.reddit.com${data.permalink}`;
+		items.push({
+			label: "Copy comment URL",
+			onClick: () => copyToClipboard(permalink),
+		});
+		items.push({
+			label: "View parent post",
+			onClick: () => {
+				resetAllFiltersFor(Function.Ids);
+				fun = Function.Ids;
+				ids = [new IdInput(IdCategory.post, data.link_id)];
+				search();
+			},
+		});
+		if (data.parent_id && data.parent_id !== data.link_id) {
+			items.push({
+				label: "View parent comment",
+				onClick: () => {
+					resetAllFiltersFor(Function.Ids);
+					fun = Function.Ids;
+					ids = [new IdInput(IdCategory.comment, data.parent_id)];
+					search();
+				},
+			});
+		}
+		items.push({
+			label: "View child comments",
+			onClick: () => {
+				resetAllFiltersFor(Function.CommentsSearch);
+				fun = Function.CommentsSearch;
+				parentId = data.id;
+				search();
+			},
+		});
+		return items;
+	}
 </script>
 
 <svelte:head>
@@ -358,14 +451,14 @@
 				<TextField
 					bind:text={subreddit}
 					label="Subreddit"
-					transform={(text) => text.replace(/^\/?r\//g, "")}
+					transform={(text) => text.replace(/^\/?r\//g, "").trim()}
 					getError={(text) => text.length == 0 || text.length >= 2 && text.match(/^[a-zA-Z0-9_\-]+$/) ? null : "Invalid subreddit"}
 					onEnter={search}
 				/>
 				<TextField
 					bind:text={author}
 					label="Author"
-					transform={(text) => text.replace(/^\/?u(ser)?\//g, "")}
+					transform={(text) => text.replace(/^\/?u(ser)?\//g, "").trim()}
 					getError={(text) => text.length == 0 || text.length >= 2 && text.match(/^[a-zA-Z0-9_\-\[\]]+$/) ? null : "Invalid author"}
 					onEnter={search}
 				/>
@@ -423,7 +516,7 @@
 			<TextField
 				bind:text={url}
 				label="URL (prefix match)"
-				transform={(text) => text.replace(/^\/?u(ser)?\//g, "")}
+				transform={(text) => text.replace(/^\/?u(ser)?\//g, "").trim()}
 				getError={(text) => text.length == 0 || text.length > 2 && !text.match(/^[a-zA-Z0-9_]+$/) ? null : "Invalid URL"}
 				onEnter={search}
 			/>
@@ -452,14 +545,14 @@
 				<TextField
 					bind:text={linkId}
 					label="Link ID"
-					transform={(text) => text.replace(/^t3_/, "")}
+					transform={(text) => text.replace(/^t3_/, "").trim()}
 					getError={(text) => text.length == 0 || text.match(/^[a-z0-9]+$/) ? null : "Invalid Base36 ID"}
 					onEnter={search}
 				/>
 				<TextField
 					bind:text={parentId}
 					label="Parent Comment ID"
-					transform={(text) => text.replace(/^t1_/, "")}
+					transform={(text) => text.replace(/^t1_/, "").trim()}
 					getError={(text) => text.length == 0 || text.match(/^[a-z0-9]+$/) ? null : "Invalid Base36 ID"}
 					onEnter={search}
 				/>
@@ -538,7 +631,7 @@
 			>Previous</button>
 			<button
 				class="submit-button"
-				disabled={loading}
+				disabled={loading || hasReachedEnd}
 				on:click={searchNext}
 			>Next</button>
 		</div>
@@ -550,14 +643,14 @@
 				<p>Nothing found o_O</p>
 			{/if}
 			{#each posts as post (post.id)}
-				<RedditPost data={post} />
+				<RedditPost data={post} contextMenuItems={getPostContextMenuItems(post)} />
 			{/each}
 		{:else if fun === Function.CommentsSearch && comments !== null}
 			{#if comments.length == 0}
 				<p>Nothing found o_O</p>
 			{/if}
 			{#each comments as comment (comment.id)}
-				<RedditComment data={comment} />
+				<RedditComment data={comment} contextMenuItems={getCommentContextMenuItems(comment)} />
 			{/each}
 		{:else if fun === Function.Ids && idResults !== null}
 			{#if idResults.length == 0}
@@ -565,9 +658,9 @@
 			{/if}
 			{#each idResults as thing (thing.id)}
 				{#if "title" in thing}
-					<RedditPost data={thing} />
+					<RedditPost data={thing} contextMenuItems={getPostContextMenuItems(thing)} />
 				{:else if "body" in thing}
-					<RedditComment data={thing} />
+					<RedditComment data={thing} contextMenuItems={getCommentContextMenuItems(thing)} />
 				{:else}
 					<p>Unknown type</p>
 				{/if}

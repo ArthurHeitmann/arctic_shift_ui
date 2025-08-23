@@ -1,10 +1,12 @@
 <script lang="ts">
 	import "$lib/default.scss";
-	import type { RedditPostData } from "$lib/redditTypes";
-	import DateDisplay from "./DateDisplay.svelte";
-	import RedditImagePreview from "./RedditImagePreview.svelte";
+	import type { RedditCommentData } from "$lib/redditTypes";
+    import ContextMenuButton from "../contextMenu/ContextMenuButton.svelte";
+    import { type ContextMenuItem } from "../contextMenu/contextMenuTypes";
+	import DateDisplay from "../DateDisplay.svelte";
 
-	export let data: RedditPostData;
+	export let data: RedditCommentData;
+	export let contextMenuItems: ContextMenuItem[];
 </script>
 
 <div class="pane">
@@ -15,21 +17,12 @@
 		<span><DateDisplay date={new Date(data.created_utc * 1000)} /></span>
 		<span> | </span>
 		<span>{data.score} 🠉</span>
+		<div class="spacer"></div>
+		<ContextMenuButton items={contextMenuItems} />
 	</div>
-	<div class="title long-text">{data.title}</div>
-	{#if data.url && !data.url.endsWith(data.permalink)}
-		<div class="url-row">
-			<a href={data.url} class="url long-url" target="_blank">{data.url}</a>
-			{#if data.preview}
-				<RedditImagePreview data={data} />
-			{/if}
-		</div>
-	{/if}
-	{#if data.selftext}
-		<div class="selftext long-text">
-			{@html data.selftext_html}
-		</div>
-	{/if}
+	<div class="body long-text">
+		{@html data.body_html}
+	</div>
 	<div class="reddit-link">
 		<span>Source link:&nbsp;</span>
 		<a href={`https://reddit.com${data.permalink}`} target="_blank" class="long-url">{`https://reddit.com${data.permalink}`}</a>
@@ -38,15 +31,18 @@
 
 <style lang="scss">
 	.header {
+		display: flex;
+		align-items: center;
+		flex-wrap: wrap;
+		gap: 0.25rem;
+
 		a {
 			color: var(--primary);
 		}
-	}
 
-	.title {
-		font-size: 1.5rem;
-		margin-top: 0.5rem;
-		margin-bottom: 0.5rem;
+		.spacer {
+			flex: 1;
+		}
 	}
 
 	.reddit-link {
@@ -60,24 +56,9 @@
 		}
 	}
 
-	.selftext {
+	.body {
 		margin-top: 0.5rem;
 		margin-bottom: 0.5rem;
-	}
-
-	.url-row {
-		display: flex;
-		flex-direction: row;
-		align-items: center;
-		margin-top: 0.5rem;
-		margin-bottom: 0.5rem;
-
-		.url {
-			flex: 1;
-			overflow: hidden;
-			text-overflow: ellipsis;
-			white-space: nowrap;
-		}
 	}
 
 	.long-url {
