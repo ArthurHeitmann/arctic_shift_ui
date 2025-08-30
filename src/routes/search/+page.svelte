@@ -13,7 +13,7 @@
     import { IdCategory, IdInput } from "./IdInput";
     import { type ContextMenuItem } from "$lib/components/contextMenu/contextMenuTypes";
     import { copyToClipboard } from "$lib/utils";
-
+    import { TextMessages } from "./textMessages";
 	enum Function {
 		PostsSearch="posts_search",
 		CommentsSearch="comments_search",
@@ -42,6 +42,9 @@
 	let body = "";
 	// id search parameters
 	let ids = [new IdInput(IdCategory.post, "")];
+	
+	$: hasEnteredRedditUrl = /https:\/\/(\w+\.)?reddit\.com\//.test(url);
+	$: hasFtsParameter = title.length > 0 || selftext.length > 0 || body.length > 0;
 
 	let showSettings = false;
 
@@ -520,6 +523,9 @@
 				getError={(text) => text.length == 0 || text.length > 2 && !text.match(/^[a-zA-Z0-9_]+$/) ? null : "Invalid URL"}
 				onEnter={search}
 			/>
+			{#if hasEnteredRedditUrl}
+				<p class="warning">{TextMessages.enteredRedditUrl}</p>
+			{/if}
 			<div class="row">
 				<OptionSelector
 					label="NSFW"
@@ -614,7 +620,7 @@
 			>Search</button>
 		</div>
 		{#if error && error.toLowerCase().includes("timeout")}
-			<p>If you're experiencing timeouts, try reducing the limit or narrowing down the time frame.</p>
+			<p class="warning">{hasFtsParameter ? TextMessages.onTimeoutWithFtsParam : TextMessages.onTimeout}</p>
 		{/if}
 	</div>
 
@@ -640,21 +646,21 @@
 	<div class="results" class:loading={loading}>
 		{#if fun === Function.PostsSearch && posts !== null}
 			{#if posts.length == 0}
-				<p>Nothing found o_O</p>
+				<p>{TextMessages.nothingFound}</p>
 			{/if}
 			{#each posts as post (post.id)}
 				<RedditPost data={post} contextMenuItems={getPostContextMenuItems(post)} />
 			{/each}
 		{:else if fun === Function.CommentsSearch && comments !== null}
 			{#if comments.length == 0}
-				<p>Nothing found o_O</p>
+				<p>{TextMessages.nothingFound}</p>
 			{/if}
 			{#each comments as comment (comment.id)}
 				<RedditComment data={comment} contextMenuItems={getCommentContextMenuItems(comment)} />
 			{/each}
 		{:else if fun === Function.Ids && idResults !== null}
 			{#if idResults.length == 0}
-				<p>Nothing found o_O</p>
+				<p>{TextMessages.nothingFound}</p>
 			{/if}
 			{#each idResults as thing (thing.id)}
 				{#if "title" in thing}
@@ -677,7 +683,7 @@
 			>Previous</button>
 			<button
 				class="submit-button"
-				disabled={loading}
+				disabled={loading || hasReachedEnd}
 				on:click={searchNext}
 			>Next</button>
 		</div>
@@ -787,6 +793,11 @@
 
 	.error {
 		color: var(--error);
+	}
+
+	.warning {
+		color: var(--warning);
+		white-space: pre-line;
 	}
 
 	.pagination {
