@@ -6,6 +6,7 @@
 	import DateDisplay from "../DateDisplay.svelte";
 	import PresetSvg from "../icons/PresetSvg.svelte";
 	import ContentLinkButtons from "./ContentLinkButtons.svelte";
+	import RedditAuthorLink from "./RedditAuthorLink.svelte";
 	import RedditImagePreview from "./RedditImagePreview.svelte";
 
 	interface Props {
@@ -19,9 +20,9 @@
 
 <div class:pane={!embedded} class="post-container">
 	<div class="header">
-		<a href={`https://reddit.com/r/${data.subreddit}`} target="_blank">r/{data.subreddit} </a>
+		<a href={`https://www.reddit.com/r/${data.subreddit}`} target="_blank">r/{data.subreddit} </a>
 		<span>by </span>
-		<a href={`https://reddit.com/u/${data.author}`} target="_blank">u/{data.author} </a>
+		<RedditAuthorLink author={data.author} isOp={false} distinguished={data.distinguished} />
 		<span><DateDisplay date={new Date(data.created_utc * 1000)} /></span>
 		<span> | </span>
 		<span class="score">{data.score}</span> <PresetSvg name="upvote" size={14} />

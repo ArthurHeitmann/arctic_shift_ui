@@ -1,12 +1,12 @@
 <script lang="ts">
 	import { getContext } from "svelte";
 	import "$lib/default.scss";
-	import type { RedditCommentData } from "$lib/redditTypes";
 	import { COMMENT_TREE_CONTEXT_KEY, type CommentTreeContext, type CommentTreeNode } from "./commentTreeTypes";
 	import DateDisplay from "../DateDisplay.svelte";
 	import ThreadActionButton from "./ThreadActionButton.svelte";
 	import PresetSvg from "../icons/PresetSvg.svelte";
 	import ContentLinkButtons from "./ContentLinkButtons.svelte";
+	import RedditAuthorLink from "./RedditAuthorLink.svelte";
 	import Self from "./CommentNode.svelte";
 
 	interface Props {
@@ -39,9 +39,13 @@
 	<div class="comment-main">
 		<div class="comment-content">
 			<div class="header">
-			<a href={`https://reddit.com/r/${data.subreddit}`} target="_blank">r/{data.subreddit}</a>
+			<a href={`https://www.reddit.com/r/${data.subreddit}`} target="_blank">r/{data.subreddit}</a>
 			<span>by</span>
-			<a href={`https://reddit.com/u/${data.author}`} target="_blank">u/{data.author}</a>
+			<RedditAuthorLink
+				author={data.author}
+				isOp={data.is_submitter}
+				distinguished={data.distinguished}
+			/>
 			<span><DateDisplay date={new Date(data.created_utc * 1000)} /></span>
 			<span>|</span>
 			<span class="score">{data.score} </span><PresetSvg name="upvote" size={14} />

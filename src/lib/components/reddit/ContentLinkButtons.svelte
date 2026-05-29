@@ -11,7 +11,7 @@
 </script>
 
 <div class="link-buttons">
-	<a href={`https://reddit.com${redditPermalink}`} target="_blank" class="link-button">
+	<a href={`https://www.reddit.com${redditPermalink}`} target="_blank" class="link-button">
 		<PresetSvg name="link" size={12} />
 		<span>Reddit</span>
 	</a>

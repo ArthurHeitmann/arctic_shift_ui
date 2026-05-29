@@ -56,8 +56,8 @@ export function formatDuration(duration: number, dense = false): string {
  *	1 - ..y
  * @param time in seconds
  */
- export function timePassedSince(time: number, includeAdverb = true, adverb = "ago", absAdverb = "at"): string {
-	const timeStr = formatDuration(Date.now() / 1000 - time);
+ export function timePassedSince(time: number, includeAdverb = true, adverb = "ago", absAdverb = "at", nowMs = Date.now()): string {
+	const timeStr = formatDuration(nowMs / 1000 - time);
 	return includeAdverb ? `${timeStr} ${adverb}` : timeStr;
 }
 
