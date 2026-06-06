@@ -58,7 +58,7 @@ export class IdInput {
 			return new IdInput(IdCategory.post, id);
 		}
 		// just id
-		if (categoryHint && /^[a-zA-Z0-9]{1,10}$/.test(idString)) {
+		if (categoryHint && /^[a-zA-Z0-9]{1,13}$/.test(idString)) {
 			return new IdInput(categoryHint, idString);
 		}
 		// unknown

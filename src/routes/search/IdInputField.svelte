@@ -27,8 +27,8 @@
 		placeholder="IDs or URLs"
 		text={id.id}
 		onChange={newId => onChange(IdInput.fromIdStringsAssert(newId, id.category))}
-		getError={newId => IdInput.fromIdStrings(newId, id.category).some(i => i === null) ? "Invalid ID format" : null}
-		width="8rem"
+		getError={newId => IdInput.fromIdStrings(newId, id.category).some(i => i === null) ? "Invalid ID" : null}
+		width="12rem"
 	/>
 	{#if onRemove}
 		<button
