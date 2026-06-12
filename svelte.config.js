@@ -10,7 +10,11 @@ const config = {
 	kit: {
 		adapter: adapter({
 			
-		})
+		}),
+		inlineStyleThreshold: Infinity,
+		output: {
+			bundleStrategy: "inline"
+		}
 	}
 };
 
