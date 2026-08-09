@@ -2,6 +2,8 @@
 
 Web UI for searching and downloading archived Reddit data, from the [Arctic Shift project](https://github.com/ArthurHeitmann/arctic_shift).
 
+For removal requests see [here](https://github.com/ArthurHeitmann/arctic_shift#contact--removal-requests).
+
 ## Developing
 
 Once you've cloned the project and installed dependencies with `npm install` (or `pnpm install` or `yarn`), start a development server:

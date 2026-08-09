@@ -113,11 +113,7 @@
 			error = "Not implemented";
 	}
 
-	async function searchPostsOrComments(clearPrevious: boolean) {
-		if (clearPrevious)
-			previousHistory = [];
-		error = null;
-		loading = true;
+	function getSearchUrl(): string|null {
 		const params = new URLSearchParams();
 		let paramNames: [string, string][] = [];
 		let endpoint: string;
@@ -152,9 +148,7 @@
 			];
 		}
 		else {
-			error = "Not implemented";
-			loading = false;
-			return;
+			return null;
 		}
 		for (const [name, value] of paramNames) {
 			if (value.length > 0)
@@ -170,7 +164,20 @@
 		params.append("md2html", "true");
 		params.append("meta-app", "search-tool");
 		
-		const requestUrl = `${apiUrl}/api/${endpoint}/search?${params.toString()}`;
+		return `${apiUrl}/api/${endpoint}/search?${params.toString()}`;
+	}
+
+	async function searchPostsOrComments(clearPrevious: boolean) {
+		if (clearPrevious)
+			previousHistory = [];
+		error = null;
+		loading = true;
+		const requestUrl = getSearchUrl();
+		if (!requestUrl) {
+			error = "Not implemented";
+			loading = false;
+			return;
+		}
 		try {
 			const response = await fetch(requestUrl);
 			let data;
@@ -336,6 +343,17 @@
 				before = "";
 			}
 		});
+	}
+
+	function copyAsRssFeed() {
+		const requestUrl = getSearchUrl();
+		if (!requestUrl) {
+			error = "Not implemented";
+			return;
+		}
+		const url = new URL(requestUrl);
+		url.searchParams.set("format", "rss");
+		navigator.clipboard.writeText(url.toString());
 	}
 </script>
 
@@ -519,11 +537,9 @@
 		<div class="row">
 			<div class="error">{error || ""}</div>
 			<button
-				class="settings-button"
+				class="submit-button secondary"
 				onclick={() => showSettings = !showSettings}
-			>
-				<img src={settingsSvg} alt="settings" />
-			</button>
+			>Other</button>
 			{#if fun === Function.PostsSearch && posts?.length || fun === Function.CommentsSearch && comments?.length || fun === Function.Ids && idResults?.length}
 				<button
 					class="submit-button secondary"
@@ -542,7 +558,14 @@
 	</div>
 
 	{#if showSettings}
-		<Preferences/>
+		<Preferences>
+			{#if fun === Function.PostsSearch || fun === Function.CommentsSearch}
+				<button
+					class="simple-button"
+					onclick={copyAsRssFeed}
+				>Copy as RSS Feed</button>
+			{/if}
+		</Preferences>
 	{/if}
 
 	{#if currentData && fun !== Function.Ids}
@@ -709,6 +732,23 @@
 		img {
 			width: 1.5rem;
 			height: 1.5rem;
+		}
+	}
+
+	.simple-button {
+		background: var(--bg-el2-color);
+		border: 1px solid var(--border-color);
+		border-radius: 0.5rem;
+		font-size: 1rem;
+		padding: 0.25rem 0.5rem;
+		width: fit-content;
+
+		&:hover {
+			background: var(--switcher-bg-hover);
+		}
+
+		&:active {
+			background: var(--switcher-bg-active);
 		}
 	}
 

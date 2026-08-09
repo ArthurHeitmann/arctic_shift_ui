@@ -2,6 +2,8 @@
 	import "$lib/default.scss";
 	import OptionSelector from "$lib/components/OptionSelector.svelte";
 	import { blurNsfw, dateDisplay, DateDisplay } from "$lib/components/searchPreferences";
+	
+	let { children } = $props();
 </script>
 
 <div class="preferences pane">
@@ -24,6 +26,8 @@
 		bind:selected={$blurNsfw}
 		column={false}
 	/>
+	
+	{@render children()}
 </div>
 
 <style lang="scss">
